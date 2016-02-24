@@ -1,0 +1,339 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  
+
+\documentclass[xcolor=x11names,compress]{beamer}
+
+%% General document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{subfig}
+\usetikzlibrary{decorations.fractals}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Beamer Layout %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\useoutertheme[subsection=false,shadow]{miniframes}
+\useinnertheme{default}
+\usefonttheme{serif}
+\usepackage{palatino}
+
+\setbeamerfont{title like}{shape=\scshape}
+\setbeamerfont{frametitle}{shape=\scshape}
+
+\setbeamercolor*{lower separation line head}{bg=DeepSkyBlue4} 
+\setbeamercolor*{normal text}{fg=black,bg=white} 
+\setbeamercolor*{alerted text}{fg=red} 
+\setbeamercolor*{example text}{fg=black} 
+\setbeamercolor*{structure}{fg=black} 
+ 
+\setbeamercolor*{palette tertiary}{fg=black,bg=black!10} 
+\setbeamercolor*{palette quaternary}{fg=black,bg=black!10} 
+
+\renewcommand{\(}{\begin{columns}}
+\renewcommand{\)}{\end{columns}}
+\newcommand{\<}[1]{\begin{column}{#1}}
+\renewcommand{\>}{\end{column}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Title Slide}
+\begin{frame}
+\title{Bayesian Hierarchical Models}
+%\subtitle{SUBTITLE}
+\author{
+	Joseph Miller\\
+	{\it Rutgers University}\\
+}
+\date{
+	\begin{tikzpicture}[decoration=Koch curve type 1] 
+		\draw[DeepSkyBlue4] decorate{ decorate{ decorate{ (0,0) -- (3,0) }}}; 
+	\end{tikzpicture}  
+	\\
+	\vspace{1cm}
+	\today
+}
+\titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\scshape Background}
+\subsection{frame 1}
+\begin{frame}{Background}
+$$P(H|D)=\frac{P(D|H)P(H)}{P(D)}=\frac{P(D|H)P(H)}{\sum_H P(D|H)P(H)}$$
+\begin{itemize}
+\pause \item Define:
+\begin{itemize}
+\item $H=\text{ a set of hypotheses}$
+\item $D=\text{ the dataset}$
+\end{itemize}
+\pause \item Conditional probability (Bayes Rule) provides the "correct" way to update beliefs, given the data collected (and a probability model).
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 2}
+\begin{frame}{Algebra}
+$$\frac{P(D|H)P(H)}{\sum_H P(D|H)P(H)}=\frac{P(D|H)P(H)}{\sum_H P(D \cap H)}=\frac{P(D|H)P(H)}{P(D)}$$
+\begin{itemize}
+\pause \item $P(D)$ is the \textit{marginal} distribution of the data, also sometimes called the \textit{evidence}.
+\pause \item But think of $\sum_H P(D|H)P(H)$ as a normalization factor so $P(D|H)P(H)$, (a function of $H$) is a valid PMF.
+\pause \item If $H$ is a vector, denominator can be difficult to compute.
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 3}
+\begin{frame}{Example: estimating the bias of a coin}
+\begin{itemize}
+\item[] Define:
+\begin{itemize}
+	\item $\theta=P(X=\text{heads})$
+	\pause \item $\theta \sim \text{Unif(0,1)} \rightarrow f_{\theta}(\theta)=1$
+	\item $X=\text{heads with probability } \theta$ and $X=\text{tails with probability } 1-\theta$, so $P(D|\theta)=\theta^x(1-\theta)^{n-x}$ where $x$ is the number of heads and $n$ is the size of the dataset.
+	\end{itemize}
+\end{itemize}
+\vspace{0.5cm}
+\pause $$\frac{P(D|\theta)P(\theta)}{\sum_\theta P(D|\theta)P(\theta)}=\frac{\theta^x(1-\theta)^{n-x} \times 1}{\sum_\theta \theta^x(1-\theta)^{n-x} \times 1}\propto \theta^x(1-\theta)^{n-x}$$
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 4}
+\begin{frame}{Example: posterior probability distributions for $\theta$}
+\centering
+\fbox{
+\includegraphics[scale=0.45]{Rplot1.pdf}
+}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 5}
+\begin{frame}{Example: how does this relate to the conventional approach?}
+\begin{itemize}
+\item $P(\theta | D)=\frac{\theta^x(1-\theta)^{n-x} \times 1}{\sum_\theta \theta^x(1-\theta)^{n-x} \times 1}$ has mode at the MLE and for a dataset of 18 Heads out of 30 flips, a 95\% HDI of (0.427, 0.760).
+\pause \item Corresponding frequentist analysis yields a confidence interval of approximately (0.425, 0.775).
+\pause \item Or, $P((X \leq 12) \cup (X \geq 18) | \theta = 0.5)=0.362$ so do not reject $H_0:$ $\theta = 0.5$.
+	\begin{itemize}
+	\pause \item Q. Is this satisfactory?
+	\pause \item Q. What sort of prior does the decision \textit{Do Not Reject} imply?
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{frame 6}
+\begin{frame}{Conjugate prior}
+\begin{itemize}
+\item Back to the likelihood: $\theta^x(1-\theta)^{n-x}$ is the kernel of a Beta$(1+x, n-1+x)$ density. Dividing it by the normalization factor, $\sum_\theta \theta^x(1-\theta)^{n-x}$, yields a Beta distribution, suggesting a new concept:
+	\begin{itemize}
+	\pause \item If we want to generalize our prior distribution (before, $P(\theta)=1$), may want to use a prior that results in a posterior, $P(\theta | x)$, that has the same form as the prior. 
+	\end{itemize}
+\pause \item A \textit{Conjugate Prior} with respect to a likelihood function is a distribution that yields a posterior with the same functional form as the prior.
+\pause \item The conjugate prior for a Bernoulli R.V. is Beta($\alpha, \beta$).
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Frame 7}
+\begin{frame}{Conjugate Prior continued}
+\begin{itemize}
+\item $\theta \sim \text{Beta}(\alpha, \beta) \rightarrow P(\theta)= \frac{\theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{B(\alpha, \beta)}$
+\pause \item $P(\theta | x)=\frac{P(x|\theta)P(\theta)}{\sum_\theta P(x|\theta)P(\theta)}=\frac{\theta^x(1-\theta)^{n-x} \times \frac{\theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{B(\alpha, \beta)}}{\sum_\theta \theta^x(1-\theta)^{n-x} \times \frac{\theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{B(\alpha, \beta)}}=$
+\pause \item[] $\frac{\theta^x(1-\theta)^{n-x} \times \theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{\sum_\theta \theta^x(1-\theta)^{n-x} \times \theta^{\alpha - 1}(1-\theta)^{\beta - 1}}=\frac{\theta^{x + \alpha - 1}(1-\theta)^{n- x + \beta - 1}}{\Sigma_\theta \theta^{x + \alpha - 1}(1-\theta)^{n- x + \beta - 1}}=$
+\pause \item[] $\frac{\theta^{x + \alpha - 1}(1-\theta)^{n- x + \beta - 1}}{B(x+\alpha - 1, n-x+\beta-1)} \rightarrow \theta|x \sim \text{Beta}(x+\alpha, n-x+\beta)$
+\pause \item Beyond the computational advantages, \textit{conjugate priors} allow your prior to be interpreted as \textit{past data}.
+	\begin{itemize}
+	\pause \item If $P(\theta)=1 \rightarrow \theta \sim$ Unif(0,1) $\leftrightarrow$ Beta(1, 1), implying that you have seen a single Heads and a single Tails, but nothing more.
+	\end{itemize}
+\pause \item E$[\theta | x]=\frac{x + \alpha}{n + \alpha + \beta}$, $\text{var}[\theta | x] = \frac{(x + \alpha)(n - x + \beta)}{(n + \alpha + \beta)^2(n + 1 + \alpha + \beta)}$
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Interlude}
+\subsection{frame 8}
+\begin{frame}{Interlude}
+Given $P(\theta | x)$, you can compute $P(x_\text{new} | x)$, the posterior predictive distribution:
+\pause 
+\begin{align*}
+P(x_\text{new} | x)&=\Sigma_\theta P(x_\text{new}, \theta | x) \\
+&=\Sigma_\theta P(x_\text{new} | \theta, x)P(\theta | x) \\
+&=\Sigma_\theta P(x_\text{new} | \theta)P(\theta | x)
+\end{align*}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Hierarchical Models}
+\subsection{frame 1}
+\begin{frame}{Hierarchical Models}
+\begin{center}
+Suppose we have the following (incomplete) binomial data: \\
+\begin{tabular}{l|c|c|c|c|c} \hline
+Experiment ($j$) & 1 & 2 & 3 & 4 & 5 \\
+Data ($\frac{x_j}{n_j}$) & $\frac{5}{10}$ & $\frac{1}{3}$ & $\frac{3}{7}$ & $\frac{7}{11}$ & $\frac{?}{10}$ \\ \hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+\pause \item A few options:
+	\begin{itemize}
+	\pause \item Use $x = \Sigma_j x_j$, $n=\Sigma_j n_j$ to get posterior distribution on $\theta$ and derive predictive distribution. Assumptions?
+	\pause \item Weight \textit{experiments} equally, e.g. $x \approx n \times \frac{1}{5}\Sigma(\frac{x_j}{n_j})$ and use $x$ and $n$ (same as before) to derive predictive distribution. What problem does this solve?
+	\end{itemize}
+\pause \item Q. Define $\theta_j = \text{E}_x[\frac{x_j}{n_j}]$. Suppose $\theta_4=0.3$, how does this influence your belief about $\theta_5$?
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 2}
+\begin{frame}{Hierarchical Models}
+\begin{center}
+Suppose we have the following (incomplete) binomial data: \\
+\begin{tabular}{l|c|c|c|c|c} \hline
+Experiment ($j$) & 1 & 2 & 3 & 4 & 5 \\
+Data ($\frac{x_j}{n_j}$) & $\frac{5}{10}$ & $\frac{3}{3}$ & $\frac{5}{7}$ & $\frac{7}{11}$ & $\frac{?}{10}$ \\ \hline
+Parameters & $\theta_1$ & $\theta_2$ & $\theta_3$ & $\theta_4$ & $\theta_5$ \\ \hline
+\end{tabular}
+\\
+\underline{Hyperparameters $\alpha$, $\beta$}
+\end{center}
+Solution:
+\begin{itemize}
+\pause \item Allow $\alpha$ and $\beta$ to be random draws from a (noninformative) \textit{hyperprior} distribution.
+\pause \item Imagine that $\theta_j$ are random draws from a prior distribution with parameters $(\alpha, \beta)$. Random draws from a Bin$(n_j,\theta_j)$ distribution then generate $x_j$.
+\pause \item Q. Can you give an example where it would be useful to insist that whatever the true value of $\alpha$, $\alpha=\beta$?
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 3}
+\begin{frame}{Structure of the Model}
+
+\begin{figure}%
+    \centering
+    \subfloat[$P(\phi)$]{{\includegraphics[width=3cm]{alphabeta.pdf} }}%
+    \qquad
+    \subfloat[$P(\theta | \phi = (3,4))$]{{\includegraphics[width=3cm]{theta.pdf} 
+}}%
+	\qquad
+    \subfloat[$P(x | \theta = 0.3)$]{{\includegraphics[width=3cm]{x.pdf} 
+}}%
+    \label{fig:example}%
+
+\end{figure}
+
+$$P(\phi, \theta | x) \propto P(\phi)P(\theta | \phi)P(x | \theta)$$
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 4}
+\begin{frame}{Hierarchical Models}
+\begin{itemize}
+\item First, $P(\phi, \theta)=P(\phi)P(\theta | \phi)$
+\pause \item $P(\phi, \theta | x) \propto P(\phi, \theta)P(x | \phi, \theta)=P(\phi, \theta)P(x |\theta)=P(\phi)P(\theta | \phi)P(x | \theta)$
+\pause \item So, $P(\phi, \theta | x) \propto P(\phi)P(\theta | \phi)P(x | \theta)$ is the joint posterior.
+\pause \item[] $P(\phi | x) = \Sigma_\theta P(\phi, \theta | x)=P(\phi, \theta | x)/P(\theta | x)$ and
+\item[] $P(\theta | x) = \Sigma_\phi P(\phi, \theta | x)$ are the marginal posteriors.
+\pause \item[] $P(x_{new} | x)=\Sigma_\phi \Sigma_\theta P(\phi | x)P(\theta | \phi, x)P(x_{new} | \phi, \theta, x)$.
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 5}
+\begin{frame}{Joint and Marginal Posteriors}
+\begin{align*}
+P(\phi, \theta | x) &\propto P(\phi)P(\theta | \phi)P(x | \theta) \\
+&\propto P(\phi)\Pi_{j=1}^4 \theta_{j}^{\alpha -1}(1-\theta_j)^{\beta - 1} \frac{1}{B(\alpha, \beta)}\Pi_{j=1}^4 \theta_{j}^{x_j}(1-\theta_j)^{n_j-x_j} \\
+&=e^{-\alpha-\beta}\Pi_{j=1}^4 \theta_{j}^{\alpha -1+x_j}(1-\theta_j)^{\beta - 1+n_j-x_j} \frac{1}{B(\alpha, \beta)} \\
+P(\theta | \phi, x) &=\Pi_{j=1}^4 \theta_{j}^{\alpha -1+x_j}(1-\theta_j)^{\beta - 1+n_j-x_j} \frac{1}{B(\alpha + x_j, \beta +n_j - x_j)} \\
+P(\phi | x)&=\frac{P(\phi, \theta | x)}{P(\theta | \phi, x)} \propto e^{-\alpha-\beta} \Pi_{j}^4 \frac{B(\alpha + x_j, \beta +n_j - x_j)}{B(\alpha, \beta)}
+\end{align*}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 6}
+\begin{frame}{Contour plot of $P(\phi | x)$}
+
+\begin{figure}%
+\includegraphics[scale=0.6]{phiDensity.pdf}
+\end{figure}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 7}
+\begin{frame}{Sampled points from joint PMF of $\phi | x$}
+By rejection sampling from the numerically computed joint posterior of $\phi$, I find parameter values that my posteriors of interest depend on:
+\begin{center}
+\includegraphics[scale=.5]{marginalAlphaBeta.pdf}
+\end{center}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 8}
+\begin{frame}{Empirical $P(\theta | x)$ for $\theta_1$ and $\theta_4$}
+\begin{center}
+\includegraphics[scale=.5]{theta14.pdf}
+\end{center}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 9}
+\begin{frame}{Empirical $P(x_{new} | x)$ for experiment 4 ($\theta_4$)}
+\centering
+\includegraphics[scale=.5]{x4.pdf}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 10}
+\begin{frame}{Empirical $P(x_{new} | x)$ for experiment 5 ($\theta_5$)}
+\centering
+\includegraphics[scale=.5]{exp5.pdf}
+
+As would be expected, $P(x_{new} | x, \theta_5)$ has a lot of uncertainty. But in spite of the small sample sizes, much can still be said about it.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 11}
+\begin{frame}{More concepts/Questions}
+\begin{itemize}
+\item Posterior predictive checks
+\pause \item Sensitivity analysis
+\pause \item Proper/improper priors $\rightarrow$ proper/improper posteriors
+\end{itemize}
+\centering
+\vspace{1cm}
+\pause \Large{Questions?}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{frame 12}
+\begin{frame}
+\centering
+\Huge{Fin.}
+\end{frame}
+
+\end{document}
